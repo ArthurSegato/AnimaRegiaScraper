@@ -15,8 +15,8 @@ const capitulo = {
     grupo: "Anima Regia",
     volume: "",
     numeroCap: "",
-    lingua: "",
-    nomeCap: "",
+    lingua: "pt-BR",
+    nome: "",
     paginas: paginasManga,
 }
 /*
@@ -26,22 +26,21 @@ const capitulo = {
 for(numeroCapitulo = 511; numeroCapitulo <= ultimoCapitulo; numeroCapitulo++){
     listaDeUrls.push(`http://animaregia.net/manga/yowamushi-pedal-ptbr/${numeroCapitulo}/1`);
 }
-function pegaNomeCap(stringHTML){
-    const dom = new JSDOM(dados.data);
-    let pegaLi = dom.window.document.querySelector("li#chapter-list").innerHTML;
-    const liConvertido = new JSDOM(pegaLi);
-    let pegaA = liConvertido.window.document.querySelector("li.active").innerHTML;
-    const aConvertido = new JSDOM(pegaA);
-    let aTitulo = aConvertido.window.document.querySelector("a").innerHTML;
-    console.log(aTitulo);
-    return aTitulo.split(": ").pop();
+function extraiNomeCap(stringHTML){
+    const htmlConvertido = new JSDOM(stringHTML);
+    const extraiLi = htmlConvertido.window.document.querySelector("li#chapter-list").innerHTML;
+    const liConvertido = new JSDOM(extraiLi);
+    const extraiA = liConvertido.window.document.querySelector("li.active").innerHTML;
+    const aConvertido = new JSDOM(extraiA);
+    const titulo = aConvertido.window.document.querySelector("a").innerHTML;
+    capitulo.nome =  titulo.split(": ").pop();
 }
 // Executa o acesso a URL passada
 axios
   .get(listaDeUrls[0])
   .then(res => {
-    pegaNomeCap(res.data);
-    
+    extraiNomeCap(res.data);
+    console.log(capitulo);
   })
   .catch(error => {
     console.error(error);
