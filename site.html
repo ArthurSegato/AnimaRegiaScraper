@@ -1,0 +1,1021 @@
+                    url = location.href.substr(base_url.length);
+                    if (url == "") {
+                        url = 1;
+                    } else {
+                        url = parseInt(State.url.substr(State.url.lastIndexOf('/') + 1));
+                    }
+
+                    current_page = url;
+                    History.pushState(null, null, base_url + '/' + current_page);
+                    changePage(current_page, false, true);
+                    document.title = title;
+                    update_numberPanel();
+                                    });
+
+                // refresh test
+                                function changePage(id, noscroll, nohash)
+                {
+                    id = parseInt(id);
+                    if (initialized && id == current_page)
+                        return false;
+                    initialized = true;
+                    if (id == pages.length) {
+                        if (next_chapter == "") {
+                            $('.next').hide();
+                        }
+                    } else if (id > pages.length) {
+                        if (next_chapter == "") {
+                            alert('Essa foi a última página :(');
+                        } else {
+                            location.href = next_chapter;
+                        }
+
+                        return false;
+                    } else {
+                        $('.next').show();
+                    }
+
+                    if (id == 1) {
+                        if (prev_chapter == "") {
+                            $('.previous').hide();
+                        }
+                    } else if (id <= 0) {
+                        if (prev_chapter == "") {
+                            alert('Você já está na primeira página.');
+                        } else {
+                            location.href = prev_chapter;
+                        }
+
+                        return false;
+                    } else {
+                        $('.previous').show();
+                    }
+
+                    preload(id);
+                    current_page = id;
+                    next = parseInt(id + 1);
+                    jQuery("html, body").stop(true, true);
+                    if (!noscroll)
+                        $("html, body").animate({scrollTop: $('div.pager-cnt').eq(0).offset().top});
+                    if (pages[current_page - 1].external == 0) {
+                        jQuery('.scan-page').attr('src', '/uploads/manga/yowamushi-pedal-ptbr/chapters/511/' + pages[current_page - 1].page_image);
+                    } else {
+                        jQuery('.scan-page').attr('src', pages[current_page - 1].page_image);
+                    }
+                    jQuery('.scan-page').parent().attr('href', "http://animaregia.net/manga/yowamushi-pedal-ptbr/511" + '/' + (current_page + 1));
+                    jQuery('.scan-page').attr('alt', 'Yowamushi Pedal (pt-br): Chapter 511 - Page ' + current_page);
+                    if (!nohash)
+                        History.pushState(null, null, base_url + '/' + current_page);
+                    document.title = title;
+                    update_numberPanel();
+                    return false;
+                }
+
+                function nextPage() {
+                    // refresh test
+                                        changePage(current_page + 1);
+                    return false;
+                                    }
+
+                function prevPage() {
+                    // refresh test
+                                        changePage(current_page - 1);
+                    return false;
+                                    }
+
+                function nextChap(){
+                    window.location = next_chapter;
+                }
+
+                function prevChap(){
+                    window.location =  "http://animaregia.net/manga/yowamushi-pedal-ptbr/510" ;
+                }
+
+                function preload(id) {
+                    var array = [];
+                    var arraydata = [];
+                    for (i = -preload_back; i < preload_next; i++) {
+                        if (id + i >= 0 && id + i < pages.length) {
+                            if (pages[(id + i)].external == 0) {
+                                array.push('/uploads/manga/yowamushi-pedal-ptbr/chapters/511/' + pages[(id + i)].page_image);
+                            } else {
+                                array.push(pages[(id + i)].page_image);
+                            }
+                            arraydata.push(id + i);
+                        }
+                    }
+
+                    jQuery.preload(array, {
+                        threshold: 40,
+                        enforceCache: true,
+                        onComplete: function (data) {
+                        }
+                    });
+                }
+
+                function update_numberPanel() {
+                    $('#page-list').selectpicker('val', current_page);
+                    $('.pagenumber').text(current_page);
+                }
+
+                $('a#modePPP').click(function (e) {
+                    e.preventDefault();
+                    localStorage.setItem('readerMode', 'PPP');
+                    $('.pager-cnt .page-nav').show();
+                    $('div#ppp').show();
+                    $('div#all').hide();
+                    $(document).on('keyup', function (e) {
+                        KeyCheck(e);
+                    });
+                });
+
+                $('a#modeALL').click(function (e) {
+                    e.preventDefault();
+                    localStorage.setItem('readerMode', 'ALL');
+                    $('.pager-cnt .page-nav').hide();
+                    $('div#ppp').hide();
+                    $('div#all').show();
+                    $(document).off('keyup');
+                    $("div#all img").unveil(300);
+                });
+
+                if (localStorage.getItem('readerMode') === 'ALL') {
+                    $('a#modeALL').click();
+                }
+
+                $('select#page-list').on('change', function () {
+                    changePage(this.value);
+                });
+
+                $(document).on('keyup', function (e) {
+                    KeyCheck(e);
+                });
+
+                function KeyCheck(e) {
+                    var ev = e || window.event;
+                    ev.preventDefault();
+                    var KeyID = ev.keyCode;
+                    switch (KeyID) {
+                        case 36:
+                            window.location = "http://animaregia.net/manga/yowamushi-pedal-ptbr";
+                            break;
+                        case 33:
+                        case 37:
+                            prevPage();
+                            break;
+                        case 34:
+                        case 39:
+                            nextPage();
+                            break;
+                    }
+                }
+
+                                    $('a.bookmark').click(function (e) {
+                        e.preventDefault();
+                        $.ajax({
+                            url: "http://animaregia.net/bookmark",
+                            method: 'POST',
+                            data: {
+                                'manga_id': '133',
+                                'chapter_id': '4942',
+                                'page_slug': '1',
+                                '_token': '2x4yf1ry9hKv4uN6xCj0LiJm6i5FnpSYCGHW2RNi'
+                            },
+                            success: function (response) {
+                                if (response.status == 'ok') {
+                                    alert("Bookmark added!");
+                                }
+                            },
+                            error: function (response) {
+                                alert("An error has occurred, please retry!");
+                            }
+                        });
+                    });
+                            </script>
+                    </div>
+
+        <!-- Modal -->
+        <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+            <div class="modal-dialog" role="document" style="z-index: 9999">
+                <div class="modal-content">
+                    <form method="POST" action="http://animaregia.net/report-bug" accept-charset="UTF-8" role="form"><input name="_token" type="hidden" value="2x4yf1ry9hKv4uN6xCj0LiJm6i5FnpSYCGHW2RNi">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                        <h4 class="modal-title" id="myModalLabel">report broken image</h4>
+                    </div>
+                    <div class="modal-body">
+                        <div>
+                            <input type="hidden" name="broken-image" value="Yowamushi Pedal (pt-br) #511 Página 1">
+                        </div>
+                        <div class="row control-group">
+                            <div class="form-group col-xs-12">
+                                <label for="email">email</label>
+                                <input type="email" class="form-control" id="email" name="email">
+                            </div>
+                        </div>
+                        <div class="row control-group">
+                            <div class="form-group col-xs-12 controls">
+PS C:\Users\segato\Documents\GitHub\AtualizadorDeManga> node main.js\
+<!doctype html>
+<!--[if lt IE 8 ]><html lang="ptbr" class="ie7"> <![endif]-->
+<!--[if IE 8 ]><html lang="ptbr" class="ie8"> <![endif]-->
+<!--[if IE 9 ]><html lang="ptbr" class="ie9"> <![endif]-->
+<!--[if (gt IE 9)|!(IE)]><!--><html lang="ptbr"> <!--<![endif]-->
+    <head>
+        <meta charset="utf-8"/>
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
+        <title>
+                        Yowamushi Pedal (pt-br) Capítulo 511 - Página 1 - AnimaRegia
+                    </title>
+        <meta name="description" content="Yowamushi Pedal (pt-br) Capítulo 511:  O fim da luta - Página 1 - AnimaRegia"/>
+        <meta name="keywords" content="Yowamushi Pedal (pt-br), , Comedy, Drama, School Life, Shounen, Sports"/>
+        <meta name="viewport" content="width=device-width, initial-scale=1"/>
+
+                <meta name="google-site-verification" content="" />
+
+                                <link rel="shortcut icon" href="/uploads/favicon.png">
+
+        <link rel="stylesheet" href="http://animaregia.net/css/bootswatch/flatly/bootstrap.min.css">
+        <link rel="stylesheet" href="http://animaregia.net/css/reader.css">
+        <link rel="stylesheet" href="http://animaregia.net/css/font-awesome.min.css">
+        <link rel="stylesheet" href="http://animaregia.net/css/bootstrap-select.min.css">
+
+        <script src="http://animaregia.net/js/vendor/jquery-1.11.0.min.js"></script>
+        <script src="http://animaregia.net/js/vendor/bootstrap.min.js"></script>
+        <script src="http://animaregia.net/js/vendor/bootstrap-select.min.js"></script>
+        <script src="http://animaregia.net/js/vendor/jquery.unveil.js"></script>
+        <script src="http://animaregia.net/js/vendor/jquery.plugins.js"></script>
+
+
+        <!--[if lt IE 9]>
+        <script src="http://animaregia.net/js/vendor/html5shiv.js"></script>
+        <script src="http://animaregia.net/js/vendor/respond.min.js"></script>
+        <![endif]-->
+    </head>
+    <body>
+        <!--[if lt IE 7]>
+            <p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
+        <![endif]-->
+
+
+
+                <!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-129109832-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-129109832-1');
+</script>
+
+        <!-- Website Menu -->
+        <nav class="navbar navbar-default navbar-static-top" role="navigation">
+            <div class="container-fluid">
+                <div class="navbar-header">
+                    <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar-collapse-1" aria-expanded="false">
+                        <span class="sr-only">Toggle navigation</span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                    </button>
+                    <h2 class="navbar-brand-logo " style="margin:0;">
+                        <a class="navbar-brand" href="http://animaregia.net">
+                                                        <img alt="AnimaRegia" src="/uploads/logo.png"/>
+                            <span style="display: none">AnimaRegia</span>
+                                                    </a>
+                    </h2>
+                </div>
+                <div class="navbar-custom-menu">
+                    <ul class="nav navbar-nav  navbar-right ">
+                                                                                                                        <!-- Notifications Menu -->
+                                                <!-- Button report bug -->
+                        <!-- <li>
+                            <a href="" class="btn-lg" data-toggle="modal" data-target="#myModal" title="report broken image">
+                                <i class="fa fa-bug"></i>
+                            </a>
+                        </li> -->
+                    </ul>
+                </div>
+                <div id="navbar-collapse-1" class="collapse navbar-collapse">
+                    <ul class="nav navbar-nav">
+                        <li><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr">Yowamushi Pedal (pt-br) Manga</a></li>
+
+                        <li class="dropdown">
+                            <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Modo de Leitura<span class="caret"></span></a>
+                            <ul class="dropdown-menu">
+                                <li><a id="modePPP" href="#"><i class="fa fa-arrows-h" style="width: 30px"></i>Por Página</a></li>
+                                <li><a id="modeALL" href="#"><i class="fa fa-arrows-v" style="width: 30px"></i>Scroll</a></li>
+                            </ul>
+                        </li>
+
+                        <li id="chapter-list" class="dropdown">
+                            <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Outros capítulos<span class="caret"></span></a>
+                            <ul class="dropdown-menu">
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/682">Capítulo 682: Manami sorrindo</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/681">Capítulo 681: A distância restante</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/680">Capítulo 680: Os três anos do Kuroda</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/679">Capítulo 679: Asas e Pernas de Gato</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/678">Capítulo 678: Aranha Tarou de Verão 3</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/677">Capítulo 677: Aranha Tarou de Verão 2</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/676">Capítulo 676: Aranha Tarou de Verão</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/675">Capítulo 675: Na montanha de novo</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/674">Capítulo 674: Hayato e Yuuto</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/673">Capítulo 673: A conclusão dos irmãos</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/672">Capítulo 672: Os demônios deles</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/671">Capítulo 671: O maior inimigo</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/670">Capítulo 670: O dia do festival</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/669">Capítulo 669: Izumida e os outros se juntam!</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/668">Capítulo 668: Atualização</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/667">Capítulo 667: Os Irmãos Shinkai</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/666">Capítulo 666: Bakyun</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/665">Capítulo 665: Yuuto, ataque!</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/664.5">Capítulo 664.5: Nogawa-san vai ajudar</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/664">Capítulo 664: Os dois mais rápidos</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/663">Capítulo 663: O que Manami preparou</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/662">Capítulo 662: A corrida de despedida da Hakone</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/661">Capítulo 661: Possível</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/660">Capítulo 660: Bolinho de Creme e Café</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/659">Capítulo 659: Velocidade Máxima vs Velocidade Máxima</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/658">Capítulo 658: A batalha do café</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/657">Capítulo 657: A primeira bicicleta de estrada</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/656">Capítulo 656: Visitante de outono</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/655">Capítulo 655: Kawada Takuya</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/654">Capítulo 654: Desejo</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/653">Capítulo 653: Vitória ou Derrota</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/652">Capítulo 652: Kawada em pânico</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/651">Capítulo 651: As duas pessoas que conhecem o Inter High</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/650">Capítulo 650: A descida perigosa</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/649">Capítulo 649: A mochila cruel</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/648">Capítulo 648: As palavras do Kawada</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/647">Capítulo 647: Batalha de Desvantagens</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/646">Capítulo 646: Pedalando</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/645">Capítulo 645: Supremacia</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/644">Capítulo 644: Vitória e Suor</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/643">Capítulo 643: A grade da linha de chegada</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/642">Capítulo 642: O último quilômetro do Motomineyama</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/641">Capítulo 641: Uma batalha de força de vontade</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/640">Capítulo 640: A corrida do primeiro ano</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/639">Capítulo 639: Erva Daninha</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/638">Capítulo 638: Ambição</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/637">Capítulo 637: Uma nova distorção</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/636">Capítulo 636: Três pessoas naquele dia</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/635">Capítulo 635: Carisma</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/634">Capítulo 634: Midousuji e a estrada</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/633">Capítulo 633: Depois de cruzarem a linha de chegada</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/632">Capítulo 632: Desejo para uma estrela</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/631">Capítulo 631: O Rugido de Danchiku</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/630">Capítulo 630: Contagem Regressiva</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/629">Capítulo 629: Orgulho e Estratégia</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/628">Capítulo 628: Correndo sozinho entre os gritos</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/627">Capítulo 627: Onoda Sakamichi a toda velocidade!</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/626">Capítulo 626: O ataque da vespa</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/625">Capítulo 625: Os Cavaleiros e o Rei</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/624">Capítulo 624: Arrancada estrondosa</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/623">Capítulo 623: A prova do TakadaJou</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/622">Capítulo 622: Proteja, Kaburagi!</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/621">Capítulo 621: Quiz</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/620">Capítulo 620: A presa</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/619">Capítulo 619: O início da batalha em zig-zag</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/618">Capítulo 618: A isca do Takada Jou</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/617">Capítulo 617: A arma leve</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/616">Capítulo 616: O ataque da Hakogaku</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/615">Capítulo 615: Vespa</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/614">Capítulo 614: A largada de determinação</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/613">Capítulo 613: As duas pessoas da Hakogaku</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/612">Capítulo 612: Danchiku Ryuuhou</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/611">Capítulo 611: A primeira batalha da equipe</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/610">Capítulo 610: A luz deles</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/609">Capítulo 609: Aqueles que herdaram</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/608">Capítulo 608: O início da nova Hakogaku</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/607">Capítulo 607: Primeiro dia de treino</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/606">Capítulo 606: A terceira geração da Sohoku</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/605">Capítulo 605: O novo capitão</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/604">Capítulo 604: Um raio de luz</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/603">Capítulo 603: Um novo começo</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/602">Capítulo 602: Cada um seguindo seu próprio caminho</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/601">Capítulo 601: Olhando para o céu azul</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/600">Capítulo 600: Rodas saltando para a linha de chegada</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/599">Capítulo 599: Distância de 30m</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/598">Capítulo 598: Duas pessoas vistas da linha de chegada</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/597">Capítulo 597: A área sem nome</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/596">Capítulo 596: A última seção</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/595">Capítulo 595: Margem grande o bastante</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/594">Capítulo 594: Uive, Ichifuji!</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/593">Capítulo 593: Ataque e defesa</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/592">Capítulo 592: O confronto deles</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/591">Capítulo 591: A MTB do Kiji</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/590">Capítulo 590: Cante a música</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/589">Capítulo 589: Nada</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/588">Capítulo 588: O beijo da fita</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/587">Capítulo 587: O fruto da vitória</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/586">Capítulo 586: Pouca coragem</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/585">Capítulo 585: O Verão do Naruko</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/584">Capítulo 584: Use suas pernas</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/583">Capítulo 583: Poder de Superação</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/582">Capítulo 582: Ultrapassando</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/581">Capítulo 581: As diferenças entre MTB e corrida de estrada</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/580">Capítulo 580: Hard Tail</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/579">Capítulo 579: A primeira corrida de MTB</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/578">Capítulo 578: Conclusão e lágrimas</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/577">Capítulo 577: A vitória de uma pessoa</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/576">Capítulo 576: A última reta</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/575">Capítulo 575: O desempenho do Kiji</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/574">Capítulo 574: Atmosfera tensa</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/573">Capítulo 573: Não me subestime!</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/572">Capítulo 572: A determinação deles</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/571">Capítulo 571: A última marcha</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/570">Capítulo 570: A corrida lendária</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/569">Capítulo 569: Pânico e sorriso</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/568">Capítulo 568: Yoshimaru acelera!</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/567">Capítulo 567: Sentimentos conectados</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/566">Capítulo 566: Persiga!</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/565">Capítulo 565: O título de Número 1</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/564">Capítulo 564: Os ataques do Imperador</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/563">Capítulo 563: Kiji Kyuui</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/562">Capítulo 562: Duas pessoas que não cedem</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/561">Capítulo 561: Yoshimaru na liderança</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/560">Capítulo 560: O começo da corrida</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/559">Capítulo 559: Aqueles que lutam no MTB</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/558">Capítulo 558: O lugar onde você quer ir</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/557">Capítulo 557: Minha bicicleta</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/556">Capítulo 556: Outro desafio</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/555">Capítulo 555: O pensamento do Sakamichi</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/554">Capítulo 554: Para o cume do Minegayama</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/553">Capítulo 553: O potencial da Mountain Bike</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/552">Capítulo 552: Aumentando a cadência</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/551">Capítulo 551: Mudança de Marcha</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/550">Capítulo 550: Mountain Bike</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/549">Capítulo 549: Bicicleta Reserva</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/548">Capítulo 548: O desafio do Sakamichi</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/547">Capítulo 547: Reunião</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/546">Capítulo 546: As Férias de Verão do Onoda</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/545">Capítulo 545: A segunda etapa especial</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/544">Capítulo 544: Premiação individual</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/543">Capítulo 543: Cerimônia de premiação</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/542">Capítulo 542: Após a linha de chegada</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/541">Capítulo 541: O fim da longa batalha</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/540">Capítulo 540: Aquele que venceu</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/539">Capítulo 539: A arrancada final</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/538">Capítulo 538: Inclinação</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/537">Capítulo 537: Luta um contra um</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/536">Capítulo 536: Os últimos 300m</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/535">Capítulo 535: Quem você quer superar</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/534">Capítulo 534: A torcida do senpai</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/533">Capítulo 533: Recuperação</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/532">Capítulo 532: O último trabalho do Kinjou</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/531">Capítulo 531: O ano passado do Onoda</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/530">Capítulo 530: A Habilidade para Lutar</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/529">Capítulo 529: Voz</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/528">Capítulo 528: O que ela viu</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/527">Capítulo 527: O Verão de um ano atrás</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/526">Capítulo 526: Uma Pequena Reunião</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/525">Capítulo 525: Cantando</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/524">Capítulo 524: O Voo do Manami</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/523">Capítulo 523: Switch</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/522">Capítulo 522: Kuroda Yukinari</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/521">Capítulo 521: O que Manami viu</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/520">Capítulo 520: Altitude de 2000m</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/519">Capítulo 519: O olhar do senpai</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/518">Capítulo 518: Coração Acelerado</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/517">Capítulo 517: O aquário em maio</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/516">Capítulo 516: A promessa daquele dia</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/515">Capítulo 515: Os 2m até a largada</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/514">Capítulo 514: O último pedido</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/513">Capítulo 513: Ataque</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/512">Capítulo 512: Aumentando as expectativas</a></li>
+                                                                <li  class="active" ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/511">Capítulo 511: O fim da luta</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/510">Capítulo 510: Consciência</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/509">Capítulo 509: O Valor Do Ace</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/508">Capítulo 508: Avance!</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/507">Capítulo 507: Um Mergulho Na Poça</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/506">Capítulo 506: O desejo do Imaizumi</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/505">Capítulo 505: A descida chuvosa</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/504">Capítulo 504: O vento muda</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/503">Capítulo 503: Crescimento</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/502">Capítulo 502: Midousuji vs Imaizumi</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/501">Capítulo 501: Aqueles que buscam a linha de chegada</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/500">Capítulo 500: Naruko Shoukichi</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/499">Capítulo 499: Jogue tudo fora</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/498">Capítulo 498: Naruko a 280ªC</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/497">Capítulo 497: O expresso Naruko</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/496">Capítulo 496: Os 200m roubados</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/495">Capítulo 495: Presas</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/494">Capítulo 494: Batalha na descida</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/493">Capítulo 493: A perseguição dos últimos 7km</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/492">Capítulo 492: As três pessoas na liderança</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/491">Capítulo 491: A aposta vencedora</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/490">Capítulo 490: Uma batalha perigosa!</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/489">Capítulo 489: Naruko vs Manami</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/488">Capítulo 488: Os músculos finais</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/487">Capítulo 487: Adversidade</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/486">Capítulo 486: A determinação do Shinkai Yuuto</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/485">Capítulo 485: As últimas oito pessoas</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/484">Capítulo 484: Ataque!</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/483">Capítulo 483: Comece a se mover!</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/482">Capítulo 482: O milagre de Sohoku</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/481">Capítulo 481: O aperto de mão final</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/480">Capítulo 480: Olhando para o céu</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/479">Capítulo 479: A parede entre eles</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/478">Capítulo 478: O incidente daquele inverno</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/477">Capítulo 477: Acredite em você</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/476">Capítulo 476: Grande torcida</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/475">Capítulo 475: A batalha dos últimos 1,5km</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/474">Capítulo 474: Ecoando Vibrações</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/473">Capítulo 473: Chuva Congelante</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/472">Capítulo 472: Prêmio da montanha para duas pessoas</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/471">Capítulo 471: O aluno transferido</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/470">Capítulo 470: A estrela da escola Minami</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/469">Capítulo 469: As duas pessoas na liderança</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/468">Capítulo 468: Alcançando Vibrações</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/467">Capítulo 467: A bandeira da Sohoku</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/466">Capítulo 466: As ordens do Teshima</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/465">Capítulo 465: Sakamichi a todo Vapor</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/464">Capítulo 464: Distância</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/463">Capítulo 463: A estrada final</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/462">Capítulo 462: Novas vozes</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/461">Capítulo 461: Uma pequena promessa</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/460">Capítulo 460: Um ataque silencioso</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/459">Capítulo 459: Ataque feroz</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/458">Capítulo 458: Os escaladores avançam!</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/457">Capítulo 457: O fim da estrada plana</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/456">Capítulo 456: O INTERCOLEGIAL DO DOUBASHI MASAKIYO</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/455">Capítulo 455: O Papel do Senpai</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/454">Capítulo 454: Uma equipe que se apoia</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/453">Capítulo 453: A colisão dos últimos KM</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/452">Capítulo 452: Sentimentos Herdados</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/451">Capítulo 451: Lágrimas</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/450">Capítulo 450: Alcancem!</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/449">Capítulo 449: A força de seis pessoas</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/448">Capítulo 448: O final do death game</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/447">Capítulo 447: Decisão na Ponte</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/446">Capítulo 446: O último desejo de Aoyagi</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/445">Capítulo 445: Seis pessoas lutando!</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/444">Capítulo 444: Urakubo e Machimiya</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/443">Capítulo 443: Urakubu Yuusaku</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/442">Capítulo 442: Perdendo a Vida</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/441">Capítulo 441: Hiroshima Impaciente</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/440">Capítulo 440: O erro de cálculo do Teshima</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/439">Capítulo 439: Death Game!</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/438">Capítulo 438: O tubarão da Hiroshima</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/437">Capítulo 437: A equipe de dois</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/436">Capítulo 436: A força para avançar juntos</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/435">Capítulo 435: Colapso de 8 pessoas</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/434">Capítulo 434: Engolido</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/433">Capítulo 433: Cerejeiras da Montanha</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/432">Capítulo 432: Corte de cabelo</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/431">Capítulo 431: As duas pessoas derrotadas</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/430">Capítulo 430: O tubarão terrestre</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/429">Capítulo 429: O líder do pelotão</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/428">Capítulo 428: Cooperação</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/427">Capítulo 427: Os dois na descida</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/426">Capítulo 426: Atravesse a muralha</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/425">Capítulo 425: O último dia começa</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/424">Capítulo 424: As respectivas linhas de partida</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/423">Capítulo 423: Abater!</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/422">Capítulo 422: A manhã da determinação</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/421">Capítulo 421: Aqueles que viram a luz</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/420">Capítulo 420: A escalada</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/419">Capítulo 419: Reunião</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/418">Capítulo 418: Um pequeno cume</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/417">Capítulo 417: A nuvem negra do Sohoku</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/416">Capítulo 416: O pódio</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/415">Capítulo 415: O vencedor</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/414">Capítulo 414: A linha de chegada do segundo dia</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/413">Capítulo 413: Os três mais fortes</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/412">Capítulo 412: Shinkai Yuto</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/411">Capítulo 411: Dia de verão</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/410">Capítulo 410: Predador</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/409">Capítulo 409: Limitador</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/408">Capítulo 408: A última reta</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/407">Capítulo 407: Um homem perigoso</a></li>
+                                                                <li ><a href="http://animaregia.net/manga/yowamushi-pedal-ptbr/406">Capítulo 406: O final fake</a></li>
+                                                            </ul>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+        <!--/ Website Menu -->
+
+        <div class="container-fluid">
+                        <div class="pager-cnt">
+                <div class="row">
+                    <div class="col-xs-12">
+                                                <ul class="pager pull-left" style="margin: 6px 0;">
+                            <li class="previous">
+                                <a href="#" onclick="return prevChap();">←prev chapter</a>
+                            </li>
+                        </ul>
+                                                                        <ul class="pager pull-right" style="margin: 6px 0;">
+                            <li class="next">
+                                <a href="#" onclick="return nextChap();">next chapter→</a>
+                            </li>
+                        </ul>
+                                                <div class="page-nav" style="margin: 0 auto;">
+                            <select id="page-list" class="selectpicker" data-style="btn-primary" data-width="auto" data-size="20">
+                                                                <option value="1"  selected >1</option>
+                                                                <option value="2" >2</option>
+                                                                <option value="3" >3</option>
+                                                                <option value="4" >4</option>
+                                                                <option value="5" >5</option>
+                                                                <option value="6" >6</option>
+                                                                <option value="7" >7</option>
+                                                                <option value="8" >8</option>
+                                                                <option value="9" >9</option>
+                                                                <option value="10" >10</option>
+                                                                <option value="11" >11</option>
+                                                                <option value="12" >12</option>
+                                                                <option value="13" >13</option>
+                                                                <option value="14" >14</option>
+                                                                <option value="15" >15</option>
+                                                                <option value="16" >16</option>
+                                                                <option value="17" >17</option>
+                                                                <option value="18" >18</option>
+                                                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class='ads'>
+                <!-- <div class="row"> -->
+                    <div class="col-xs-12">
+                        <div class="ads-large" style="display: table; margin: 20px auto 10px;">
+
+                        </div>
+                        <div style="display: table; margin: 20px auto 10px;">
+                            <div class="pull-left ads-sqre1" style="margin-right: 50px;">
+
+                            </div>
+                            <div class="pull-right ads-sqre2">
+
+                            </div>
+                        </div>
+                    </div>
+                <!-- </div> -->
+            </div>
+
+            <div class="viewer-cnt">
+                <div class="row">
+                    <div class="col-xs-12 col-sm-12">
+                        <div id="all" style=" display: none; ">
+                                                        <img class="img-responsive" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-src=' http://unionmangas.top/leitor/mangas/Yowamushi%20Pedal/511/00.jpeg ' alt='Yowamushi Pedal (pt-br): Chapter 511 - Page 1'/>
+                                                        <img class="img-responsive" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-src=' http://unionmangas.top/leitor/mangas/Yowamushi%20Pedal/511/01.jpeg ' alt='Yowamushi Pedal (pt-br): Chapter 511 - Page 2'/>
+                                                        <img class="img-responsive" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-src=' http://unionmangas.top/leitor/mangas/Yowamushi%20Pedal/511/02.jpeg ' alt='Yowamushi Pedal (pt-br): Chapter 511 - Page 3'/>
+                                                        <img class="img-responsive" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-src=' http://unionmangas.top/leitor/mangas/Yowamushi%20Pedal/511/03.jpeg ' alt='Yowamushi Pedal (pt-br): Chapter 511 - Page 4'/>
+                                                        <img class="img-responsive" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-src=' http://unionmangas.top/leitor/mangas/Yowamushi%20Pedal/511/04.jpeg ' alt='Yowamushi Pedal (pt-br): Chapter 511 - Page 5'/>
+                                                        <img class="img-responsive" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-src=' http://unionmangas.top/leitor/mangas/Yowamushi%20Pedal/511/05.jpeg ' alt='Yowamushi Pedal (pt-br): Chapter 511 - Page 6'/>
+                                                        <img class="img-responsive" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-src=' http://unionmangas.top/leitor/mangas/Yowamushi%20Pedal/511/06.jpeg ' alt='Yowamushi Pedal (pt-br): Chapter 511 - Page 7'/>
+                                                        <img class="img-responsive" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-src=' http://unionmangas.top/leitor/mangas/Yowamushi%20Pedal/511/07.jpeg ' alt='Yowamushi Pedal (pt-br): Chapter 511 - Page 8'/>
+                                                        <img class="img-responsive" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-src=' http://unionmangas.top/leitor/mangas/Yowamushi%20Pedal/511/08.jpeg ' alt='Yowamushi Pedal (pt-br): Chapter 511 - Page 9'/>
+                                                        <img class="img-responsive" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-src=' http://unionmangas.top/leitor/mangas/Yowamushi%20Pedal/511/09.jpeg ' alt='Yowamushi Pedal (pt-br): Chapter 511 - Page 10'/>
+                                                        <img class="img-responsive" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-src=' http://unionmangas.top/leitor/mangas/Yowamushi%20Pedal/511/10.jpeg ' alt='Yowamushi Pedal (pt-br): Chapter 511 - Page 11'/>
+                                                        <img class="img-responsive" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-src=' http://unionmangas.top/leitor/mangas/Yowamushi%20Pedal/511/11.jpeg ' alt='Yowamushi Pedal (pt-br): Chapter 511 - Page 12'/>
+                                                        <img class="img-responsive" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-src=' http://unionmangas.top/leitor/mangas/Yowamushi%20Pedal/511/12.jpeg ' alt='Yowamushi Pedal (pt-br): Chapter 511 - Page 13'/>
+                                                        <img class="img-responsive" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-src=' http://unionmangas.top/leitor/mangas/Yowamushi%20Pedal/511/13.jpeg ' alt='Yowamushi Pedal (pt-br): Chapter 511 - Page 14'/>
+                                                        <img class="img-responsive" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-src=' http://unionmangas.top/leitor/mangas/Yowamushi%20Pedal/511/14.jpeg ' alt='Yowamushi Pedal (pt-br): Chapter 511 - Page 15'/>
+                                                        <img class="img-responsive" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-src=' http://unionmangas.top/leitor/mangas/Yowamushi%20Pedal/511/15.jpeg ' alt='Yowamushi Pedal (pt-br): Chapter 511 - Page 16'/>
+                                                        <img class="img-responsive" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-src=' http://unionmangas.top/leitor/mangas/Yowamushi%20Pedal/511/16.jpeg ' alt='Yowamushi Pedal (pt-br): Chapter 511 - Page 17'/>
+                                                        <img class="img-responsive" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-src=' http://unionmangas.top/leitor/mangas/Yowamushi%20Pedal/511/17.jpeg ' alt='Yowamushi Pedal (pt-br): Chapter 511 - Page 18'/>
+                                                    </div>
+                        <div id="ppp" style="">
+                            <!-- refresh test -->
+                                                        <a href="" onclick="return nextPage();">
+                                <img class="img-responsive scan-page" src=' http://unionmangas.top/leitor/mangas/Yowamushi%20Pedal/511/00.jpeg ' alt='Yowamushi Pedal (pt-br): Chapter 511 - Page 1'/>
+                            </a>
+                                                    </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class='ads'>
+                <div class="row">
+                    <div class="col-xs-12">
+                        <div class="ads-large" style="display: table; margin: 20px auto 10px;">
+
+                        </div>
+                        <div style="display: table; margin: 20px auto 10px;">
+                            <div class="pull-left ads-sqre1" style="margin-right: 50px;">
+
+                            </div>
+                            <div class="pull-right ads-sqre2">
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pager-cnt">
+                <div class="row">
+                    <div class="col-xs-12">
+                                                <ul class="pager pull-left" style="margin: 6px 0;">
+                            <li class="previous">
+                                <a href="#" onclick="return prevChap();">←prev chapter</a>
+                            </li>
+                        </ul>
+                                                                        <ul class="pager pull-right" style="margin: 6px 0;">
+                            <li class="next">
+                                <a href="#" onclick="return nextChap();">next chapter→</a>
+                            </li>
+                        </ul>
+                                            </div>
+                </div>
+
+            </div>
+
+                        <!-- comment -->
+                        <div class="row" style="max-width: 890px; margin:15px auto;">
+                <div class="col-xs-12">
+                    <ul class="nav nav-tabs" role="tablist">
+                                                                                                <li role="presentation"><a href="#disqus" aria-controls="disqus" role="tab" data-toggle="tab">Disqus</a></li>
+                                            </ul>
+
+                    <!-- Tab panes -->
+                    <div class="tab-content">
+                                                                                                <div role="tabpanel" class="tab-pane active" id="disqus">
+                            <div id="disqus_thread"></div>
+                            <script>
+                                var disqus_config = function () {
+                                    this.page.url = "http://animaregia.net/manga/yowamushi-pedal-ptbr/511";
+                                };
+                                (function () {  // DON'T EDIT BELOW THIS LINE
+                                    var d = document, s = d.createElement('script');
+                                    s.src = '//anima-regia.disqus.com/embed.js';
+                                    s.setAttribute('data-timestamp', +new Date());
+                                    (d.head || d.body).appendChild(s);
+                                })();</script>
+                            <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript>
+                        </div>
+                                            </div>
+                </div>
+            </div>
+
+            <script>
+                var title = document.title;
+                var pages = [{"page_image":"http:\/\/unionmangas.top\/leitor\/mangas\/Yowamushi%20Pedal\/511\/00.jpeg","page_slug":1,"external":1},{"page_image":"http:\/\/unionmangas.top\/leitor\/mangas\/Yowamushi%20Pedal\/511\/01.jpeg","page_slug":2,"external":1},{"page_image":"http:\/\/unionmangas.top\/leitor\/mangas\/Yowamushi%20Pedal\/511\/02.jpeg","page_slug":3,"external":1},{"page_image":"http:\/\/unionmangas.top\/leitor\/mangas\/Yowamushi%20Pedal\/511\/03.jpeg","page_slug":4,"external":1},{"page_image":"http:\/\/unionmangas.top\/leitor\/mangas\/Yowamushi%20Pedal\/511\/04.jpeg","page_slug":5,"external":1},{"page_image":"http:\/\/unionmangas.top\/leitor\/mangas\/Yowamushi%20Pedal\/511\/05.jpeg","page_slug":6,"external":1},{"page_image":"http:\/\/unionmangas.top\/leitor\/mangas\/Yowamushi%20Pedal\/511\/06.jpeg","page_slug":7,"external":1},{"page_image":"http:\/\/unionmangas.top\/leitor\/mangas\/Yowamushi%20Pedal\/511\/07.jpeg","page_slug":8,"external":1},{"page_image":"http:\/\/unionmangas.top\/leitor\/mangas\/Yowamushi%20Pedal\/511\/08.jpeg","page_slug":9,"external":1},{"page_image":"http:\/\/unionmangas.top\/leitor\/mangas\/Yowamushi%20Pedal\/511\/09.jpeg","page_slug":10,"external":1},{"page_image":"http:\/\/unionmangas.top\/leitor\/mangas\/Yowamushi%20Pedal\/511\/10.jpeg","page_slug":11,"external":1},{"page_image":"http:\/\/unionmangas.top\/leitor\/mangas\/Yowamushi%20Pedal\/511\/11.jpeg","page_slug":12,"external":1},{"page_image":"http:\/\/unionmangas.top\/leitor\/mangas\/Yowamushi%20Pedal\/511\/12.jpeg","page_slug":13,"external":1},{"page_image":"http:\/\/unionmangas.top\/leitor\/mangas\/Yowamushi%20Pedal\/511\/13.jpeg","page_slug":14,"external":1},{"page_image":"http:\/\/unionmangas.top\/leitor\/mangas\/Yowamushi%20Pedal\/511\/14.jpeg","page_slug":15,"external":1},{"page_image":"http:\/\/unionmangas.top\/leitor\/mangas\/Yowamushi%20Pedal\/511\/15.jpeg","page_slug":16,"external":1},{"page_image":"http:\/\/unionmangas.top\/leitor\/mangas\/Yowamushi%20Pedal\/511\/16.jpeg","page_slug":17,"external":1},{"page_image":"http:\/\/unionmangas.top\/leitor\/mangas\/Yowamushi%20Pedal\/511\/17.jpeg","page_slug":18,"external":1}];
+
+                var next_chapter =  "http://animaregia.net/manga/yowamushi-pedal-ptbr/512" ;
+                var prev_chapter =  "http://animaregia.net/manga/yowamushi-pedal-ptbr/510/18" ;
+
+                var preload_next = 3;
+                var preload_back = 2;
+                var current_page = 1;
+
+                var base_url = "http://animaregia.net/manga/yowamushi-pedal-ptbr/511";
+
+                var initialized = false;
+
+                jQuery(document).ready(function () {
+                    $('.selectpicker').selectpicker();
+                    if ($("div#all").is(":visible"))
+                        $("div#all img").unveil(300);
+
+                    // refresh test
+                                        jQuery(window).bind('statechange', function () {
+                        url = location.href.substr(base_url.length);
+                        var State = History.getState();
+                        if (url == "") {
+                            current_page = 1;
+                        } else {
+                            url = parseInt(State.url.substr(State.url.lastIndexOf('/') + 1));
+                        }
+                        changePage(url, false, true);
+                        document.title = title;
+                    });
+
+                    State = History.getState();
+                    url = location.href.substr(base_url.length);
+                    if (url == "") {
+                        url = 1;
+                    } else {
+                        url = parseInt(State.url.substr(State.url.lastIndexOf('/') + 1));
+                    }
+
+                    current_page = url;
+                    History.pushState(null, null, base_url + '/' + current_page);
+                    changePage(current_page, false, true);
+                    document.title = title;
+                    update_numberPanel();
+                                    });
+
+                // refresh test
+                                function changePage(id, noscroll, nohash)
+                {
+                    id = parseInt(id);
+                    if (initialized && id == current_page)
+                        return false;
+                    initialized = true;
+                    if (id == pages.length) {
+                        if (next_chapter == "") {
+                            $('.next').hide();
+                        }
+                    } else if (id > pages.length) {
+                        if (next_chapter == "") {
+                            alert('Essa foi a última página :(');
+                        } else {
+                            location.href = next_chapter;
+                        }
+
+                        return false;
+                    } else {
+                        $('.next').show();
+                    }
+
+                    if (id == 1) {
+                        if (prev_chapter == "") {
+                            $('.previous').hide();
+                        }
+                    } else if (id <= 0) {
+                        if (prev_chapter == "") {
+                            alert('Você já está na primeira página.');
+                        } else {
+                            location.href = prev_chapter;
+                        }
+
+                        return false;
+                    } else {
+                        $('.previous').show();
+                    }
+
+                    preload(id);
+                    current_page = id;
+                    next = parseInt(id + 1);
+                    jQuery("html, body").stop(true, true);
+                    if (!noscroll)
+                        $("html, body").animate({scrollTop: $('div.pager-cnt').eq(0).offset().top});
+                    if (pages[current_page - 1].external == 0) {
+                        jQuery('.scan-page').attr('src', '/uploads/manga/yowamushi-pedal-ptbr/chapters/511/' + pages[current_page - 1].page_image);
+                    } else {
+                        jQuery('.scan-page').attr('src', pages[current_page - 1].page_image);
+                    }
+                    jQuery('.scan-page').parent().attr('href', "http://animaregia.net/manga/yowamushi-pedal-ptbr/511" + '/' + (current_page + 1));
+                    jQuery('.scan-page').attr('alt', 'Yowamushi Pedal (pt-br): Chapter 511 - Page ' + current_page);
+                    if (!nohash)
+                        History.pushState(null, null, base_url + '/' + current_page);
+                    document.title = title;
+                    update_numberPanel();
+                    return false;
+                }
+
+                function nextPage() {
+                    // refresh test
+                                        changePage(current_page + 1);
+                    return false;
+                                    }
+
+                function prevPage() {
+                    // refresh test
+                                        changePage(current_page - 1);
+                    return false;
+                                    }
+
+                function nextChap(){
+                    window.location = next_chapter;
+                }
+
+                function prevChap(){
+                    window.location =  "http://animaregia.net/manga/yowamushi-pedal-ptbr/510" ;
+                }
+
+                function preload(id) {
+                    var array = [];
+                    var arraydata = [];
+                    for (i = -preload_back; i < preload_next; i++) {
+                        if (id + i >= 0 && id + i < pages.length) {
+                            if (pages[(id + i)].external == 0) {
+                                array.push('/uploads/manga/yowamushi-pedal-ptbr/chapters/511/' + pages[(id + i)].page_image);
+                            } else {
+                                array.push(pages[(id + i)].page_image);
+                            }
+                            arraydata.push(id + i);
+                        }
+                    }
+
+                    jQuery.preload(array, {
+                        threshold: 40,
+                        enforceCache: true,
+                        onComplete: function (data) {
+                        }
+                    });
+                }
+
+                function update_numberPanel() {
+                    $('#page-list').selectpicker('val', current_page);
+                    $('.pagenumber').text(current_page);
+                }
+
+                $('a#modePPP').click(function (e) {
+                    e.preventDefault();
+                    localStorage.setItem('readerMode', 'PPP');
+                    $('.pager-cnt .page-nav').show();
+                    $('div#ppp').show();
+                    $('div#all').hide();
+                    $(document).on('keyup', function (e) {
+                        KeyCheck(e);
+                    });
+                });
+
+                $('a#modeALL').click(function (e) {
+                    e.preventDefault();
+                    localStorage.setItem('readerMode', 'ALL');
+                    $('.pager-cnt .page-nav').hide();
+                    $('div#ppp').hide();
+                    $('div#all').show();
+                    $(document).off('keyup');
+                    $("div#all img").unveil(300);
+                });
+
+                if (localStorage.getItem('readerMode') === 'ALL') {
+                    $('a#modeALL').click();
+                }
+
+                $('select#page-list').on('change', function () {
+                    changePage(this.value);
+                });
+
+                $(document).on('keyup', function (e) {
+                    KeyCheck(e);
+                });
+
+                function KeyCheck(e) {
+                    var ev = e || window.event;
+                    ev.preventDefault();
+                    var KeyID = ev.keyCode;
+                    switch (KeyID) {
+                        case 36:
+                            window.location = "http://animaregia.net/manga/yowamushi-pedal-ptbr";
+                            break;
+                        case 33:
+                        case 37:
+                            prevPage();
+                            break;
+                        case 34:
+                        case 39:
+                            nextPage();
+                            break;
+                    }
+                }
+
+                                    $('a.bookmark').click(function (e) {
+                        e.preventDefault();
+                        $.ajax({
+                            url: "http://animaregia.net/bookmark",
+                            method: 'POST',
+                            data: {
+                                'manga_id': '133',
+                                'chapter_id': '4942',
+                                'page_slug': '1',
+                                '_token': 'fSA5Ff6aQGU42d0jSPBsWH65YFpqiY0gTZu5dpOx'
+                            },
+                            success: function (response) {
+                                if (response.status == 'ok') {
+                                    alert("Bookmark added!");
+                                }
+                            },
+                            error: function (response) {
+                                alert("An error has occurred, please retry!");
+                            }
+                        });
+                    });
+                            </script>
+                    </div>
+
+        <!-- Modal -->
+        <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+            <div class="modal-dialog" role="document" style="z-index: 9999">
+                <div class="modal-content">
+                    <form method="POST" action="http://animaregia.net/report-bug" accept-charset="UTF-8" role="form"><input name="_token" type="hidden" value="fSA5Ff6aQGU42d0jSPBsWH65YFpqiY0gTZu5dpOx">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                        <h4 class="modal-title" id="myModalLabel">report broken image</h4>
+                    </div>
+                    <div class="modal-body">
+                        <div>
+                            <input type="hidden" name="broken-image" value="Yowamushi Pedal (pt-br) #511 Página 1">
+                        </div>
+                        <div class="row control-group">
+                            <div class="form-group col-xs-12">
+                                <label for="email">email</label>
+                                <input type="email" class="form-control" id="email" name="email">
+                            </div>
+                        </div>
+                        <div class="row control-group">
+                            <div class="form-group col-xs-12 controls">
+                                <label for="message">message</label>
+                                <textarea rows="3" class="form-control" id="subject" name="subject"></textarea>
+                            </div>
+                        </div>
+                        <br/>
+                                            </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">close</button>
+                        <button type="submit" class="btn btn-primary">send</button>
+                    </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+            </body>
+</html>
