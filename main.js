@@ -9,7 +9,8 @@ const { JSDOM } = jsdom;
 *   VARIABLES
 */
 // From which chapter this script should start downloading
-const startChapter = 518;
+const startChapter = 511;
+// 518
 // Until which chapter the program should download
 const endChapter = 682;
 /*
@@ -64,6 +65,10 @@ const Get_Chapter_Pages = function(stringHTML, currentChapter){
 }
 // Download all the pages to the chapter folder
 async function Donwload_Images(url, image_path){
+  // Check if the image has already been downloaded
+  if (fs.existsSync(image_path)) {
+    return
+  }
   // Wait some seconds to avoid get fucked by cloudflare
   await delay(2000);
   // Requests the image
@@ -76,7 +81,9 @@ async function Donwload_Images(url, image_path){
         response.data
           .pipe(fs.createWriteStream(image_path))
           .on('finish', () => resolve())
-          .on('error', e => reject(e));
+          .on('error', e => {
+            console.error("Fucking cloudFlare cockblocked me!");
+          });
       }),
   );
 }
