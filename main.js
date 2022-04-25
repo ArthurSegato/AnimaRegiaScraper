@@ -9,7 +9,7 @@ const { JSDOM } = jsdom;
 *   VARIABLES
 */
 // From which chapter this script should start downloading
-const startChapter = 511;
+const startChapter = 518;
 // Until which chapter the program should download
 const endChapter = 682;
 /*
@@ -80,26 +80,25 @@ async function Donwload_Images(url, image_path){
       }),
   );
 }
-// Acessa as URLS e baixa a o html
+// Acess Anima Regia website
 (async () => {
-  for(let numeroCapitulo = startChapter; numeroCapitulo <= endChapter; numeroCapitulo++){
-    // Cria as pastas
-    Create_Folder(numeroCapitulo);
+  // Create all the chapters folders first
+  for(let currentChapter = startChapter; currentChapter <= endChapter; currentChapter++){
+    Create_Folder(currentChapter);
   }
-  for(let numeroCapitulo = startChapter; numeroCapitulo <= endChapter; numeroCapitulo++){
-    // Codifica a url para n dar erro quando tiver espaços ou caracteres especiais
-    const urlEncoded = encodeURI(`http://animaregia.net/manga/yowamushi-pedal-ptbr/${numeroCapitulo}/1`);
-    // Faz as requisições
+  // Acess all the chapters of the manga
+  for(let currentChapter = startChapter; currentChapter <= endChapter; currentChapter++){
+    // Requests the website html
     axios
-      .get(urlEncoded)
+      .get(`http://animaregia.net/manga/yowamushi-pedal-ptbr/${currentChapter}/1`)
       .then(res => {
         Get_Chapter_Name(res.data);
-        Get_Chapter_Pages(res.data, numeroCapitulo);
+        Get_Chapter_Pages(res.data, currentChapter);
       })
       .catch(error => {
         console.error(error);
       })
       await delay(2000);
-      console.log(`Capitulo Baixado: ${numeroCapitulo}`);
+      console.info(`Donwloaded chapter: ${currentChapter}`);
   }
 })();
