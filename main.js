@@ -1,47 +1,105 @@
 /*
-*   BIBLIOTECAS
+*   LIBRARIES
 */
+const fs = require('fs');
 const axios = require('axios');
 const jsdom = require("jsdom");
-const { type } = require('os');
 const { JSDOM } = jsdom;
 /*
-*   VARIÁVEIS
+*   VARIABLES
 */
-let paginasManga = []
-let listaDeUrls = [];
-let ultimoCapitulo = 682;
-const capitulo = {
-    grupo: "Anima Regia",
-    volume: "",
-    numeroCap: "",
-    lingua: "pt-BR",
-    nome: "",
-    paginas: paginasManga,
-}
+// From which chapter this script should start downloading
+const startChapter = 511;
+// Until which chapter the program should download
+const endChapter = 682;
 /*
-*   FUNÇÕES
+*   FUNCTIONS
 */
-// Gera as URLS a serem acessadas
-for(numeroCapitulo = 511; numeroCapitulo <= ultimoCapitulo; numeroCapitulo++){
-    listaDeUrls.push(`http://animaregia.net/manga/yowamushi-pedal-ptbr/${numeroCapitulo}/1`);
+// Function to pause execution for a while
+const delay = ms => new Promise(res => setTimeout(res, ms));
+// Create a folder for the current chapter
+const Create_Folder = function(currentChapter){
+  // Path for the parent folder
+  const parentFolderPath = `downloaded_chapters`;
+  // Generate a folder path for the actual chapter based on the parent path
+  const chaptersFolderPath = `${parentFolderPath}/${currentChapter}`;
+  // Verify if the parent folder already exists, if not, create one and display a message on console
+  if(!fs.existsSync(parentFolderPath)){
+    fs.mkdirSync(parentFolderPath);
+    console.info("Parent folder created.");
+  }
+  // Verify if a folder for the current chapter already exists, if not, create one and display a message on console
+  if(!fs.existsSync(chaptersFolderPath)){
+    fs.mkdirSync(chaptersFolderPath);
+    console.info(`${currentChapter} folder created.`);
+  }
 }
-function extraiNomeCap(stringHTML){
-    const htmlConvertido = new JSDOM(stringHTML);
-    const extraiLi = htmlConvertido.window.document.querySelector("li#chapter-list").innerHTML;
-    const liConvertido = new JSDOM(extraiLi);
-    const extraiA = liConvertido.window.document.querySelector("li.active").innerHTML;
-    const aConvertido = new JSDOM(extraiA);
-    const titulo = aConvertido.window.document.querySelector("a").innerHTML;
-    capitulo.nome =  titulo.split(": ").pop();
+// Extract the name of the current chapter
+const Get_Chapter_Name = function(stringHTML){
+  // Convert the html of the page from string to DOM
+  const domHTML = new JSDOM(stringHTML);
+  // Extract a list from the DOM
+  const stringList = domHTML.window.document.querySelector("li#chapter-list").innerHTML;
+  // Convert the list to DOM
+  const domList = new JSDOM(stringList);
+  // Entract the active list item from DOM
+  const stringLinks = domList.window.document.querySelector("li.active").innerHTML;
+  // Convert the list item to DOM
+  const domLinks = new JSDOM(stringLinks);
+  // Extrat the chapter title from the html tag
+  const chapterTitle = domLinks.window.document.querySelector("a").innerHTML;
+  // return the title, after removing the chapter number
+  return chapterTitle.split(": ").pop();
 }
-// Executa o acesso a URL passada
-axios
-  .get(listaDeUrls[0])
-  .then(res => {
-    extraiNomeCap(res.data);
-    console.log(capitulo);
-  })
-  .catch(error => {
-    console.error(error);
-  })
+// Extract the url of the chapter pages
+const Get_Chapter_Pages = function(stringHTML, currentChapter){
+  // Convert the html page from string to DOM
+  const domHTML = new JSDOM(stringHTML);
+  // Extracts the list of image from a div
+  const imageList = domHTML.window.document.querySelector("div#all").children;
+  // Call a function to download the images from the list above
+  for(let i = 0; i < imageList.length; i++){
+    Donwload_Images(imageList[i].getAttribute("data-src"), `downloaded_chapters/${currentChapter}/${i}.jpg`);
+  }
+}
+// Download all the pages to the chapter folder
+async function Donwload_Images(url, image_path){
+  // Wait some seconds to avoid get fucked by cloudflare
+  await delay(2000);
+  // Requests the image
+  axios({
+    url,
+    responseType: 'stream',
+  }).then(
+    response =>
+      new Promise((resolve, reject) => {
+        response.data
+          .pipe(fs.createWriteStream(image_path))
+          .on('finish', () => resolve())
+          .on('error', e => reject(e));
+      }),
+  );
+}
+// Acessa as URLS e baixa a o html
+(async () => {
+  for(let numeroCapitulo = startChapter; numeroCapitulo <= endChapter; numeroCapitulo++){
+    // Cria as pastas
+    Create_Folder(numeroCapitulo);
+  }
+  for(let numeroCapitulo = startChapter; numeroCapitulo <= endChapter; numeroCapitulo++){
+    // Codifica a url para n dar erro quando tiver espaços ou caracteres especiais
+    const urlEncoded = encodeURI(`http://animaregia.net/manga/yowamushi-pedal-ptbr/${numeroCapitulo}/1`);
+    // Faz as requisições
+    axios
+      .get(urlEncoded)
+      .then(res => {
+        Get_Chapter_Name(res.data);
+        Get_Chapter_Pages(res.data, numeroCapitulo);
+      })
+      .catch(error => {
+        console.error(error);
+      })
+      await delay(2000);
+      console.log(`Capitulo Baixado: ${numeroCapitulo}`);
+  }
+})();
