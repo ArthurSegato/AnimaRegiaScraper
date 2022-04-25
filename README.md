@@ -1,4 +1,4 @@
-# AnimaRegiaScraper
+# Anima Regia Scraper
 Node Js program to scrape manga pages from AnimaRegia
 
 ## The problem:
