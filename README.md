@@ -7,4 +7,4 @@ The pt-BR translation of Yowamushi Pedal on mangadex was not up to date, so I de
 ## The Solution:
 Short answer: [this](https://github.com/ArthurSegato/AnimaRegiaScraper).
 
-Long answer: This script connects to the (translators website)[https://animaregia.net], downloads the pages and chapter titles and uploads them to the Mangadex API.
+Long answer: This script connects to the [translators website](https://animaregia.net), downloads the pages and chapter titles and uploads them to the Mangadex API.
